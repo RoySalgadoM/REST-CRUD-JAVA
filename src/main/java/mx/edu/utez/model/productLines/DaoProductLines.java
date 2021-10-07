@@ -3,12 +3,12 @@ package mx.edu.utez.model.productLines;
 import mx.edu.utez.model.products.Products;
 import mx.edu.utez.util.ConnectionMysql;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.InputStream;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class DaoProductLines {
@@ -48,7 +48,7 @@ public class DaoProductLines {
     }
     public List<ProductLines> findAll() {
         List<ProductLines> productLines = new ArrayList<>();
-        String query = "select productLine, textDescription,htmlDescription,image from products;";
+        String query = "select productLine, textDescription,htmlDescription,image from productLines;";
         try {
             con = ConnectionMysql.getConnection();
             pstm = con.prepareStatement(query);
@@ -58,49 +58,73 @@ public class DaoProductLines {
                 productLine.setProductLine(rs.getString("productLine"));
                 productLine.setTextDescription(rs.getString("textDescription"));
                 productLine.setHtmlDescription(rs.getString("htmlDescription"));
-
+                Blob blob = rs.getBlob("image");
+                if(blob != null){
+                    InputStream inputStream = blob.getBinaryStream();
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = -1;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    byte[] imageBytes = outputStream.toByteArray();
+                    String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                    inputStream.close();
+                    outputStream.close();
+                    productLine.setBase64Image(base64Image);
+                    System.out.println(base64Image);
+                }
                 productLines.add(productLine);
             }
-        } catch (SQLException throwables) {
+        } catch (SQLException | IOException throwables) {
             throwables.printStackTrace();
         } finally {
             closeConnection();
         }
         return productLines;
     }
-    public Products findProductById(String productCode) {
-        String query = "select productCode, productName,productLine,productScale,productVendor,productDescription,quantityInStock,buyPrice,MSRP from products where productCode = ?;";
-        Products product= new Products();
+    public ProductLines findProductLineById(String productLine) {
+        String query = "select productLine, textDescription,htmlDescription,image from productLines where productLine = ?;";
+        ProductLines productsLine = new ProductLines();
         try {
             con = ConnectionMysql.getConnection();
             pstm = con.prepareStatement(query);
-            pstm.setString(1,productCode);
+            pstm.setString(1,productLine);
             rs = pstm.executeQuery();
-            if (rs.next()) {
-                product.setProductCode(rs.getString("productCode"));
-                product.setProductName(rs.getString("productName"));
-                product.setProductLine(rs.getString("productLine"));
-                product.setProductScale(rs.getString("productScale"));
-                product.setProductVendor(rs.getString("productVendor"));
-                product.setProductDescription(rs.getString("productDescription"));
-                product.setQuantityInStock(rs.getInt("quantityInStock"));
-                product.setBuyPrice(rs.getDouble("buyPrice"));
-                product.setMsrp(rs.getDouble("MSRP"));
+            while (rs.next()) {
+                productsLine.setProductLine(rs.getString("productLine"));
+                productsLine.setTextDescription(rs.getString("textDescription"));
+                productsLine.setHtmlDescription(rs.getString("htmlDescription"));
+                Blob blob = rs.getBlob("image");
+                if(blob != null){
+                    InputStream inputStream = blob.getBinaryStream();
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = -1;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    byte[] imageBytes = outputStream.toByteArray();
+                    String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+                    inputStream.close();
+                    outputStream.close();
+                    productsLine.setBase64Image(base64Image);
+                }
             }
-        } catch (SQLException throwables) {
+        } catch (SQLException | IOException throwables) {
             throwables.printStackTrace();
         } finally {
             closeConnection();
         }
-        return product;
+        return productsLine;
     }
-    public boolean deleteProduct(String productCode){
+    public boolean deleteProductLine(String productLine){
         boolean state = false;
-        String query = "delete from products where productCode = ?;";
+        String query = "delete from productLines where productLine = ?;";
         try{
             con = ConnectionMysql.getConnection();
             pstm = con.prepareStatement(query);
-            pstm.setString(1,productCode);
+            pstm.setString(1,productLine);
             state = pstm.executeUpdate()==1;
         }catch (SQLException throwables){
             throwables.printStackTrace();
