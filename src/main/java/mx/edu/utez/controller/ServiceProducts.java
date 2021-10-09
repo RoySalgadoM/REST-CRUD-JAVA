@@ -1,9 +1,4 @@
 package mx.edu.utez.controller;
-import mx.edu.utez.model.Customer;
-import mx.edu.utez.model.DaoCustomer;
-import mx.edu.utez.model.offices.DaoOffices;
-import mx.edu.utez.model.offices.Offices;
-import mx.edu.utez.model.productLines.ProductLines;
 import mx.edu.utez.model.products.DaoProducts;
 import mx.edu.utez.model.products.Products;
 

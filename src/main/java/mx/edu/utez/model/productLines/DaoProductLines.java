@@ -26,7 +26,7 @@ public class DaoProductLines {
                 pstm.setString(1,productLines.getProductLine());
                 pstm.setString(2,productLines.getTextDescription());
                 pstm.setString(3,productLines.getHtmlDescription());
-                pstm.setBlob(4,productLines.getBinary().getInputStream());
+                pstm.setString(4,productLines.getBase64Image());
                 state = pstm.executeUpdate()==1;
             }else{
                 String query = "update productLines set textDescription=?,htmlDescription=?,image=?" +
@@ -35,11 +35,11 @@ public class DaoProductLines {
                 pstm = con.prepareStatement(query);
                 pstm.setString(1,productLines.getTextDescription());
                 pstm.setString(2,productLines.getHtmlDescription());
-                pstm.setBlob(3,productLines.getBinary().getInputStream());
+                pstm.setString(3,productLines.getBase64Image());
                 pstm.setString(4,productLines.getProductLine());
                 state = pstm.executeUpdate()==1;
             }
-        }catch (SQLException | IOException throwables){
+        }catch (SQLException throwables){
             throwables.printStackTrace();
         }finally {
             closeConnection();
